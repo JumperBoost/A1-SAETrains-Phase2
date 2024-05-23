@@ -1,5 +1,6 @@
 package fr.umontpellier.iut.graphes;
 
+
 import java.util.*;
 
 /**
@@ -20,14 +21,17 @@ public class Graphe {
      * Construit un graphe à n sommets 0..n-1 sans arêtes
      */
     public Graphe(int n) {
-        throw new RuntimeException("Méthode à implémenter");
+        this();
+        for (int nbSommet=0; nbSommet<n; nbSommet++){
+            ajouterSommet(nbSommet);
+        }
     }
 
     /**
      * Construit un graphe vide
      */
     public Graphe() {
-        throw new RuntimeException("Méthode à implémenter");
+        sommets = new HashSet<>();
     }
 
     /**
@@ -39,7 +43,22 @@ public class Graphe {
      *          même si en principe ce n'est pas obligatoire)
      */
     public Graphe(Graphe g, Set<Sommet> X) {
-        throw new RuntimeException("Méthode à implémenter");
+        this(X);
+        Set<Sommet> voisins;
+        for (Sommet s : sommets){
+            for (Sommet som : g.getSommets()){
+                if (som.getIndice() == s.getIndice()){
+                    voisins = som.getVoisins();
+                    for (Sommet voisin : voisins){
+                        if (sommets.contains(voisin)){
+                            if (s.estVoisin(voisin)){
+                                s.ajouterVoisin(getSommet(voisin.getIndice()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -108,7 +127,7 @@ public class Graphe {
      * @return le nombre d'arêtes du graphe
      */
     public int getNbAretes() {
-        throw new RuntimeException("Méthode à implémenter");
+        return getAretes().size();
     }
 
     /**
@@ -118,7 +137,11 @@ public class Graphe {
      * @return un booléen retournant {@code true} si le sommet a été ajouté, {@code false} sinon
      */
     public boolean ajouterSommet(int i) {
-        throw new RuntimeException("Méthode à implémenter");
+        for(Sommet sommet : sommets)
+            if(sommet.getIndice() == i)
+                return false;
+        sommets.add(new Sommet.SommetBuilder().setIndice(i).createSommet());
+        return true;
     }
 
     /**
@@ -137,21 +160,37 @@ public class Graphe {
      * @return le degré du sommet {@code s}
      */
     public int degre(Sommet s) {
-        throw new RuntimeException("Méthode à implémenter");
+        return s.getVoisins().size();
     }
 
     /**
      * @return true si et seulement si this est complet.
      */
     public boolean estComplet() {
-        throw new RuntimeException("Méthode à implémenter");
+        if (getNbAretes()==(sommets.size()*(sommets.size()-1))/2){
+            return true;
+        }
+        return false;
     }
 
     /**
      * @return true si et seulement si this est une chaîne. On considère que le graphe vide est une chaîne.
      */
     public boolean estChaine() {
-        throw new RuntimeException("Méthode à implémenter");
+        if (!estComplet() && getNbSommets()-1==getNbAretes() && estConnexe()){
+            int nbBout = 0;
+            for (Sommet s : sommets){
+                if (s.getVoisins().size()==1){
+                    nbBout = nbBout + 1;
+                }
+
+                if (nbBout>2 || s.getVoisins().size()>2){
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -211,11 +250,17 @@ public class Graphe {
     }
 
     public void ajouterArete(Sommet s, Sommet t) {
-        throw new RuntimeException("Méthode à implémenter");
+        if (!s.estVoisin(t)){
+            s.ajouterVoisin(t);
+            t.ajouterVoisin(s);
+        }
     }
 
     public void supprimerArete(Sommet s, Sommet t) {
-        throw new RuntimeException("Méthode à implémenter");
+        if (s.estVoisin(t)){
+            s.supprimerVoisin(t);
+            t.supprimerVoisin(s);
+        }
     }
 
     /**
@@ -241,7 +286,24 @@ public class Graphe {
      * @return le surcout total minimal du parcours entre le sommet de depart et le sommet d'arrivée
      */
     public int getDistance(Sommet depart, Sommet arrivee) {
-        throw new RuntimeException("Méthode à implémenter");
+        if (depart == arrivee) {
+            return arrivee.getSurcout();
+        }
+        List<Integer> surcouts = new ArrayList<>();
+        for (Sommet s : depart.getVoisins()){
+            surcouts.add(getDistance(s, arrivee) + depart.getSurcout());
+        }
+        if (!surcouts.isEmpty()) {
+            int plusPetit = surcouts.get(0);
+            for (int valeur : surcouts) {
+                if (valeur < plusPetit) {
+                    plusPetit = valeur;
+                }
+            }
+
+            return plusPetit;
+        }
+        return 0;
     }
 
     /**
@@ -312,7 +374,13 @@ public class Graphe {
      * @return le degré maximum des sommets du graphe
      */
     public int degreMax() {
-        throw new RuntimeException("Méthode à implémenter");
+        int nbDegreMax = 0;
+        for (Sommet s : sommets){
+            if (degre(s)>nbDegreMax){
+                nbDegreMax = degre(s);
+            }
+        }
+        return nbDegreMax;
     }
 
     /**

@@ -100,6 +100,12 @@ public class Sommet {
         voisins.add(voisin);
     }
 
+    /**
+     * Supprime le sommet voisin du sommet courant
+     * @param s un sommet à retirer des voisins de this
+     */
+    public void supprimerVoisin(Sommet s){ voisins.remove(s); }
+
     public boolean estVoisin(Sommet sommet) {
         return voisins.contains(sommet);
     }

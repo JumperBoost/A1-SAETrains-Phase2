@@ -1,16 +1,42 @@
 package fr.umontpellier.iut.trains;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import fr.umontpellier.iut.graphes.Sommet;
 import org.junit.Test;
 import org.junit.jupiter.api.Timeout;
 
 import fr.umontpellier.iut.graphes.Graphe;
 import fr.umontpellier.iut.trains.plateau.Plateau;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 @Timeout(value = 1, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
 public class GrapheTest {
+
+    @Test
+    public void test_creer_graphe_induit(){
+        Set<Sommet> sommets = new HashSet<>();
+        Jeu jeu = new Jeu(new String[]{"Batman", "Robin"}, new String[]{}, Plateau.TOKYO);
+        Graphe graphe = jeu.getGraphe();
+        sommets.add(graphe.getSommet(0));
+        sommets.add(graphe.getSommet(1));
+        sommets.add(graphe.getSommet(2));
+
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(1));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(2));
+
+        Set<Sommet> som = new HashSet<>();
+        som.add(graphe.getSommet(0));
+        som.add(graphe.getSommet(1));
+        som.add(graphe.getSommet(2));
+
+        Graphe g = new Graphe(graphe, sommets);
+
+        assertTrue(g.getSommets().equals(som));
+    }
+
     @Test
     public void test_graphe_tokyo() {
         Jeu jeu = new Jeu(new String[]{"Batman", "Robin"}, new String[]{}, Plateau.TOKYO);
@@ -45,5 +71,214 @@ public class GrapheTest {
         assertTrue(graphe.estConnexe());
         assertTrue(graphe.possedeUnCycle());
         assertEquals(6, graphe.degreMax());
+    }
+
+    @Test
+    public void est_complet_vrai() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        int nbvoisin=0;
+        for (int i=0; i<graphe.getSommets().size(); i++){
+            if (graphe.getNbSommets()>1) {
+                for (int n = 0; n < graphe.getNbSommets()-1; n++) {
+                    for (int x = n+1; x < graphe.getNbSommets(); x++) {
+                        if (!graphe.getSommet(n).estVoisin(graphe.getSommet(x))){
+                            graphe.ajouterArete(graphe.getSommet(n), graphe.getSommet(x));
+                            nbvoisin = nbvoisin + 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        assertEquals(nbvoisin, graphe.getNbAretes());
+        assertTrue(graphe.estComplet());
+    }
+
+    @Test
+    public void est_chaine_vrai() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        int nbArrete = 0;
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (!(i==0)){
+                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+                nbArrete++;
+            }
+        }
+
+        assertEquals(nbArrete, graphe.getNbAretes());
+        assertTrue(graphe.estChaine());
+    }
+
+    @Test
+    public void est_chaine_faux() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (!(i==0)){
+                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+            }
+        }
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(3));
+
+        assertFalse(graphe.estChaine());
+    }
+
+    @Test
+    public void est_chaine_faux_avec_un_sommet_isole() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (!(i==0 || i==graphe.getNbSommets()-1)){
+                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+            }
+        }
+
+        assertFalse(graphe.estChaine());
+    }
+
+    @Test
+    public void est_connexe_vrai() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (!(i==0)){
+                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+            }
+        }
+
+        assertTrue(graphe.estConnexe());
+    }
+
+    @Test
+    public void est_connexe_vrai_et_complet() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getSommets().size(); i++){
+            if (graphe.getNbSommets()>1) {
+                for (int n = 0; n < graphe.getNbSommets()-1; n++) {
+                    for (int x = n+1; x < graphe.getNbSommets(); x++) {
+                        if (!graphe.getSommet(n).estVoisin(graphe.getSommet(x))){
+                            graphe.ajouterArete(graphe.getSommet(n), graphe.getSommet(x));
+                        }
+                    }
+                }
+            }
+        }
+
+        assertTrue(graphe.estConnexe());
+    }
+
+    @Test
+    public void est_connexe_faux() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (!(i==0)){
+                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+            }
+        }
+        assertTrue(graphe.estChaine());
+        graphe.supprimerArete(graphe.getSommet(2), graphe.getSommet(3));
+
+        assertFalse(graphe.estChaine());
+        assertFalse(graphe.estConnexe());
+    }
+
+    @Test
+    public void est_connexe_faux_un_sommet_isole() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (!(i==0)){
+                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+            }
+        }
+        graphe.supprimerArete(graphe.getSommet(0), graphe.getSommet(1));
+
+        assertFalse(graphe.estConnexe());
+    }
+
+    @Test
+    public void est_connexe_faux_un_sommet_isole_mais_les_autres_tous_voisin() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=0; i<graphe.getNbSommets(); i++){
+            if (graphe.getNbSommets()>1) {
+                for (int n = 0; n < graphe.getNbSommets()-1; n++) {
+                    for (int x = n+1; x < graphe.getNbSommets(); x++) {
+                        if (!graphe.getSommet(n).estVoisin(graphe.getSommet(x))){
+                            graphe.ajouterArete(graphe.getSommet(n), graphe.getSommet(x));
+                        }
+                    }
+                }
+            }
+        }
+        for (int i=1; i<graphe.getNbSommets(); i++) {
+            graphe.supprimerArete(graphe.getSommet(0), graphe.getSommet(i));
+        }
+
+        assertFalse(graphe.estConnexe());
+    }
+
+    private Graphe generer_au_moins_un_cycle() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+        Graphe graphe = jeu.getGraphe();
+        for(int i = 0; i < 9; i++)
+            graphe.ajouterArete(graphe.getSommet(i), graphe.getSommet(i+1));
+        graphe.ajouterArete(graphe.getSommet(3), graphe.getSommet(13));
+        graphe.ajouterArete(graphe.getSommet(4), graphe.getSommet(14));
+        graphe.ajouterArete(graphe.getSommet(13), graphe.getSommet(14));
+        return graphe;
+    }
+
+    @Test
+    public void au_moins_un_cycle_vrai() {
+        Graphe graphe = generer_au_moins_un_cycle();
+        assertTrue(graphe.possedeUnCycle());
+    }
+
+    @Test
+    public void au_moins_un_cycle_faux() {
+        Graphe graphe = generer_au_moins_un_cycle();
+        graphe.supprimerArete(graphe.getSommet(13), graphe.getSommet(14));
+        assertFalse(graphe.possedeUnCycle());
+    }
+
+    @Test
+    public void est_un_cycle_vrai() {
+        Graphe graphe = new Graphe(5);
+        for(int i = 0; i < 4; i++) {
+            graphe.ajouterArete(graphe.getSommet(i), graphe.getSommet(i+1));
+        }
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(4));
+        assertTrue(graphe.estCycle());
+    }
+
+    @Test
+    public void est_un_cycle_faux_un() {
+        Graphe graphe = new Graphe(5);
+        for(int i = 0; i < 4; i++) {
+            graphe.ajouterArete(graphe.getSommet(i), graphe.getSommet(i+1));
+        }
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(4));
+        graphe.ajouterArete(graphe.getSommet(2), graphe.getSommet(4));
+        assertFalse(graphe.estCycle());
+    }
+
+    @Test
+    public void est_un_cycle_faux_deux() {
+        Graphe graphe = generer_au_moins_un_cycle();
+        assertFalse(graphe.estCycle());
     }
 }
