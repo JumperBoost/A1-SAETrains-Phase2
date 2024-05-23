@@ -97,7 +97,11 @@ public class Graphe {
      * @return l'ensemble d'arêtes du graphe sous forme d'ensemble de paires de sommets
      */
     public Set<Set<Sommet>> getAretes() {
-        throw new RuntimeException("Méthode à implémenter");
+        Set<Set<Sommet>> aretes = new HashSet<>();
+        for(Sommet sommet : sommets)
+            for(Sommet voisin : sommet.getVoisins())
+                aretes.add(Set.of(sommet, voisin));
+        return aretes;
     }
 
     /**
@@ -111,6 +115,7 @@ public class Graphe {
      * Ajoute un sommet d'indice i au graphe s'il n'est pas déjà présent
      *
      * @param i l'entier correspondant à l'indice du sommet à ajouter dans le graphe
+     * @return un booléen retournant {@code true} si le sommet a été ajouté, {@code false} sinon
      */
     public boolean ajouterSommet(int i) {
         throw new RuntimeException("Méthode à implémenter");
@@ -153,7 +158,13 @@ public class Graphe {
      * @return true si et seulement si this est un cycle. On considère que le graphe vide n'est pas un cycle.
      */
     public boolean estCycle() {
-        throw new RuntimeException("Méthode à implémenter");
+        if(getNbSommets() >= 3 && getNbAretes() > getNbSommets()-1 && estConnexe()) {
+            for(Sommet sommet : sommets)
+                if(degre(sommet) != 2)
+                    return false;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -168,7 +179,28 @@ public class Graphe {
      * @return true si et seulement si this a au moins un cycle. On considère que le graphe vide n'est pas un cycle.
      */
     public boolean possedeUnCycle() {
-        throw new RuntimeException("Méthode à implémenter");
+        if(getNbSommets() >= 3) {
+            Set<Sommet> dejaVus = new HashSet<>();
+            for (Sommet sommet : sommets) {
+                dejaVus.clear();
+                if(voisinPossedeUnCycle(dejaVus, sommet, null))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean voisinPossedeUnCycle(Set<Sommet> dejaVus, Sommet sommetActuel, Sommet dernierSommet) {
+        for (Sommet voisin : sommetActuel.getVoisins()) {
+            if (voisin != dernierSommet) {
+                if (dejaVus.contains(voisin))
+                    return true;
+                dejaVus.add(voisin);
+                if(voisinPossedeUnCycle(dejaVus, voisin, sommetActuel))
+                    return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -255,7 +287,25 @@ public class Graphe {
      * @return true si et seulement si this est connexe.
      */
     public boolean estConnexe() {
-        throw new RuntimeException("Méthode à implémenter");
+        List<Sommet> dejaVue = new ArrayList<>();
+        Sommet s = getSommet(0);
+        dejaVue.add(s);
+        Set<Sommet> voisins;
+        int indice = 0;
+        while (dejaVue.size() != sommets.size()){
+            voisins = s.getVoisins();
+            for (Sommet voisin : voisins) {
+                if (!dejaVue.contains(voisin)) {
+                    dejaVue.add(voisin);
+                }
+            }
+            indice++;
+            if (indice < dejaVue.size()) {
+                s = dejaVue.get(indice);
+            }
+            else {return false;}
+        }
+        return true;
     }
 
     /**

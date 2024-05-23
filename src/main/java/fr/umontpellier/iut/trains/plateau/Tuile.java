@@ -24,8 +24,13 @@ public abstract class Tuile {
         return rails.contains(joueur);
     }
 
+    public Set<Joueur> getRails() {
+        return rails;
+    }
+
     public void ajouterRail(Joueur joueur) {
         rails.add(joueur);
+        joueur.getJeu().getGraphe().getSommet(joueur.getJeu().getTuiles().indexOf(this)).ajouterJoueur(joueur);
     }
 
     public void ajouterGare() {
@@ -89,6 +94,10 @@ public abstract class Tuile {
     }
 
     public boolean peutEtrePositionDepart() {
+        return true;
+    }
+
+    public boolean peutEtreSommet() {
         return true;
     }
 

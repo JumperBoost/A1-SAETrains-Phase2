@@ -70,6 +70,9 @@ public class Jeu implements Runnable {
      */
     private List<Bouton> boutons;
 
+
+    private Graphe graphe;
+
     /**
      * Constructeur de la classe Jeu
      * 
@@ -115,6 +118,10 @@ public class Jeu implements Runnable {
             this.joueurs.add(new Joueur(this, nomJoueur, couleurs.remove(0)));
         }
         this.joueurCourant = joueurs.get(0);
+
+        // Créer le graphe
+        graphe = new Graphe();
+        tuiles.stream().filter(Tuile::peutEtreSommet).forEach(tuile -> graphe.ajouterSommet(new Sommet(tuile, this)));
     }
 
     public Map<String, ListeDeCartes> getReserve() {
@@ -405,7 +412,7 @@ public class Jeu implements Runnable {
      * @return le graphe des tuiles du jeu (sans les tuiles Mer)
      */
     public Graphe getGraphe() {
-        throw new RuntimeException("Méthode à implémenter");
+        return graphe;
     }
 
     /**
@@ -414,6 +421,7 @@ public class Jeu implements Runnable {
      *         rails
      */
     public Graphe getGraphe(Joueur joueur) {
-        throw new RuntimeException("Méthode à implémenter");
+        Set<Sommet> sommets = graphe.getSommets().stream().filter(sommet -> sommet.getJoueurs().contains(joueurs.indexOf(joueur))).collect(Collectors.toSet());
+        return new Graphe(sommets);
     }
 }

@@ -1,11 +1,13 @@
 package fr.umontpellier.iut.graphes;
 
 import fr.umontpellier.iut.trains.Jeu;
+import fr.umontpellier.iut.trains.Joueur;
 import fr.umontpellier.iut.trains.plateau.Tuile;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Classe modélisant les sommets. Le numéro du sommet correspond à la numérotation du plateau en partant
@@ -46,7 +48,12 @@ public class Sommet {
 
 
     public Sommet(Tuile tuile, Jeu jeu) {
-        throw new RuntimeException("Méthode à implémenter");
+        Graphe g = jeu.getGraphe();
+        this.i = g.getNbSommets();
+        this.surcout = tuile.getSurcout();
+        this.joueurs = jeu.getJoueurs().stream().filter(tuile::hasRail).map(joueur -> jeu.getJoueurs().indexOf(joueur)).collect(Collectors.toSet());
+        this.nbPointsVictoire = tuile.getNbPointsVictoire();
+        this.voisins = new HashSet<>();
     }
 
     /**
@@ -63,6 +70,10 @@ public class Sommet {
 
     public int getIndice() {
         return i;
+    }
+
+    public void ajouterJoueur(Joueur joueur) {
+        joueurs.add(joueur.getJeu().getJoueurs().indexOf(joueur));
     }
 
     public Set<Integer> getJoueurs() {
@@ -86,11 +97,11 @@ public class Sommet {
     }
 
     public void ajouterVoisin(Sommet voisin) {
-        throw new RuntimeException("Méthode à implémenter");
+        voisins.add(voisin);
     }
 
     public boolean estVoisin(Sommet sommet) {
-        throw new RuntimeException("Méthode à implémenter");
+        return voisins.contains(sommet);
     }
 
     @Override
