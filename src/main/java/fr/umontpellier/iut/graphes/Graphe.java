@@ -14,7 +14,9 @@ public class Graphe {
     private final Set<Sommet> sommets;
 
     public Graphe(Set<Sommet> sommets) {
-        this.sommets = sommets;
+        this();
+        for(Sommet s : sommets)
+            this.sommets.add(new Sommet(s));
     }
 
     /**
@@ -22,7 +24,7 @@ public class Graphe {
      */
     public Graphe(int n) {
         this();
-        for (int nbSommet=0; nbSommet<n; nbSommet++){
+        for(int nbSommet = 0; nbSommet < n; nbSommet++){
             ajouterSommet(nbSommet);
         }
     }
@@ -44,21 +46,10 @@ public class Graphe {
      */
     public Graphe(Graphe g, Set<Sommet> X) {
         this(X);
-        Set<Sommet> voisins;
-        for (Sommet s : sommets){
-            for (Sommet som : g.getSommets()){
-                if (som.getIndice() == s.getIndice()){
-                    voisins = som.getVoisins();
-                    for (Sommet voisin : voisins){
-                        if (sommets.contains(voisin)){
-                            if (s.estVoisin(voisin)){
-                                s.ajouterVoisin(getSommet(voisin.getIndice()));
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        for(Sommet s : sommets)
+            for(Sommet voisin : s.getVoisins())
+                if(!sommets.contains(voisin))
+                    s.supprimerVoisin(voisin);
     }
 
     /**
@@ -67,7 +58,31 @@ public class Graphe {
      * Pré-requis : on peut supposer que la séquence est triée dans l'ordre croissant.
      */
     public static boolean sequenceEstGraphe(List<Integer> sequence) {
-        throw new RuntimeException("Méthode à implémenter");
+        int sommeSequence = 0, degreMax = 0;
+        for(int i : sequence) {
+            sommeSequence += i;
+            if(i > degreMax)
+                degreMax = i;
+        }
+
+        // Vérification séquence paire et degré max dans l'encadrement 0 < max < n
+        if(sommeSequence % 2 == 0 && degreMax > 0 && degreMax < sequence.size()) {
+            List<Integer> seqCopy = new ArrayList<>(sequence);
+            for(int i = seqCopy.size()-1; i > 0; i--) {
+                int nbRestants = seqCopy.get(i);
+                int j = i-1;
+                while (j >= 0 && nbRestants != 0) {
+                    if(seqCopy.get(j) != 0) {
+                        seqCopy.set(j, seqCopy.get(j)-1);
+                        nbRestants--;
+                    }
+                    j--;
+                }
+                if(nbRestants != 0)
+                    return false;
+            }
+        } else return false;
+        return true;
     }
 
     /**
@@ -167,26 +182,21 @@ public class Graphe {
      * @return true si et seulement si this est complet.
      */
     public boolean estComplet() {
-        if (getNbAretes()==(sommets.size()*(sommets.size()-1))/2){
-            return true;
-        }
-        return false;
+        return getNbAretes() == (sommets.size()*(sommets.size()-1)) / 2;
     }
 
     /**
      * @return true si et seulement si this est une chaîne. On considère que le graphe vide est une chaîne.
      */
     public boolean estChaine() {
-        if (!estComplet() && getNbSommets()-1==getNbAretes() && estConnexe()){
+        if (getNbAretes() == getNbSommets()-1){
             int nbBout = 0;
             for (Sommet s : sommets){
-                if (s.getVoisins().size()==1){
-                    nbBout = nbBout + 1;
-                }
+                if (s.getVoisins().size() == 1)
+                    nbBout++;
 
-                if (nbBout>2 || s.getVoisins().size()>2){
+                if (nbBout > 2 || s.getVoisins().isEmpty() || s.getVoisins().size() > 2)
                     return false;
-                }
             }
             return true;
         }
@@ -375,11 +385,9 @@ public class Graphe {
      */
     public int degreMax() {
         int nbDegreMax = 0;
-        for (Sommet s : sommets){
-            if (degre(s)>nbDegreMax){
+        for (Sommet s : sommets)
+            if (degre(s)>nbDegreMax)
                 nbDegreMax = degre(s);
-            }
-        }
         return nbDegreMax;
     }
 

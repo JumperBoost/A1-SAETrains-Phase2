@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Timeout;
 import fr.umontpellier.iut.graphes.Graphe;
 import fr.umontpellier.iut.trains.plateau.Plateau;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,24 +16,21 @@ public class GrapheTest {
 
     @Test
     public void test_creer_graphe_induit(){
-        Set<Sommet> sommets = new HashSet<>();
         Jeu jeu = new Jeu(new String[]{"Batman", "Robin"}, new String[]{}, Plateau.TOKYO);
         Graphe graphe = jeu.getGraphe();
+        Set<Sommet> sommets = new HashSet<>();
         sommets.add(graphe.getSommet(0));
         sommets.add(graphe.getSommet(1));
         sommets.add(graphe.getSommet(2));
+        sommets.add(graphe.getSommet(3));
 
         graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(1));
         graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(2));
-
-        Set<Sommet> som = new HashSet<>();
-        som.add(graphe.getSommet(0));
-        som.add(graphe.getSommet(1));
-        som.add(graphe.getSommet(2));
-
+        graphe.ajouterArete(graphe.getSommet(3), graphe.getSommet(4));
         Graphe g = new Graphe(graphe, sommets);
 
-        assertTrue(g.getSommets().equals(som));
+        assertEquals(4, g.getNbSommets());
+        assertEquals(2, g.getNbAretes());
     }
 
     @Test
@@ -114,6 +110,18 @@ public class GrapheTest {
     }
 
     @Test
+    public void est_chaine_vrai_avec_un_sommet_pas_bon_ordre() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=1; i<graphe.getNbSommets()-1; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(graphe.getNbSommets()-1));
+
+        assertTrue(graphe.estChaine());
+    }
+
+    @Test
     public void est_chaine_faux() {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
@@ -133,11 +141,20 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=0; i<graphe.getNbSommets(); i++){
-            if (!(i==0 || i==graphe.getNbSommets()-1)){
-                graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
-            }
-        }
+        for (int i=1; i<graphe.getNbSommets()-1; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+
+        assertFalse(graphe.estChaine());
+    }
+
+    @Test
+    public void est_chaine_faux_avec_un_sommet_isole_et_cycle() {
+        Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
+
+        Graphe graphe = jeu.getGraphe();
+        for (int i=1; i<graphe.getNbSommets()-1; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(graphe.getNbSommets()-2));
 
         assertFalse(graphe.estChaine());
     }
@@ -280,5 +297,26 @@ public class GrapheTest {
     public void est_un_cycle_faux_deux() {
         Graphe graphe = generer_au_moins_un_cycle();
         assertFalse(graphe.estCycle());
+    }
+
+    @Test
+    public void sequence_correcte() {
+        List<Integer> sequence = new ArrayList<>(List.of(1, 2, 2, 0, 3));
+
+        assertTrue(Graphe.sequenceEstGraphe(sequence));
+    }
+
+    @Test
+    public void sequence_incorrecte() {
+        List<Integer> sequence = new ArrayList<>(List.of(1, 1, 2, 0, 3));
+
+        assertFalse(Graphe.sequenceEstGraphe(sequence));
+    }
+
+    @Test
+    public void sequence_incorrecte2() {
+        List<Integer> sequence = new ArrayList<>(List.of(0, 0, 0, 0, 0));
+
+        assertFalse(Graphe.sequenceEstGraphe(sequence));
     }
 }
