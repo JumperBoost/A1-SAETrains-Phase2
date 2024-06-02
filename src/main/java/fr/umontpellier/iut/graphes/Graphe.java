@@ -45,11 +45,16 @@ public class Graphe {
      *          même si en principe ce n'est pas obligatoire)
      */
     public Graphe(Graphe g, Set<Sommet> X) {
-        this(X);
-        for(Sommet s : sommets)
-            for(Sommet voisin : s.getVoisins())
-                if(!sommets.contains(voisin))
-                    s.supprimerVoisin(voisin);
+        this();
+        for(Sommet sommetGraphe : g.getSommets()) {
+            if (X.contains(sommetGraphe)) {
+                Sommet sommet = new Sommet(sommetGraphe);
+                for(Sommet voisin : sommetGraphe.getVoisins())
+                    if(!X.contains(voisin))
+                        sommet.supprimerVoisin(voisin);
+                ajouterSommet(sommet);
+            }
+        }
     }
 
     /**
@@ -256,7 +261,22 @@ public class Graphe {
      * @return true si et seulement si this a un isthme
      */
     public boolean possedeUnIsthme() {
-        throw new RuntimeException("Méthode à implémenter");
+        if(degreMin() > 1) {
+            Graphe graphe = new Graphe(this, sommets);
+            Set<Set<Sommet>> aretes = new HashSet<>(graphe.getAretes());
+            Set<Set<Sommet>> ensembleClasses;
+            Iterator<Set<Sommet>> it = aretes.iterator();
+            List<Sommet> arete;
+            while (it.hasNext()) {
+                ensembleClasses = getEnsembleClassesConnexite();
+                arete = it.next().stream().toList();
+                graphe.supprimerArete(arete.get(0), arete.get(1));
+                if(!getEnsembleClassesConnexite().equals(ensembleClasses))
+                    return true;
+                graphe.ajouterArete(arete.get(0), arete.get(1));
+            }
+        } else return true;
+        return false;
     }
 
     public void ajouterArete(Sommet s, Sommet t) {
@@ -359,23 +379,20 @@ public class Graphe {
      * @return true si et seulement si this est connexe.
      */
     public boolean estConnexe() {
-        List<Sommet> dejaVue = new ArrayList<>();
+        List<Sommet> dejaVus = new ArrayList<>();
         Sommet s = getSommet(0);
-        dejaVue.add(s);
+        dejaVus.add(s);
         Set<Sommet> voisins;
         int indice = 0;
-        while (dejaVue.size() != sommets.size()){
-            voisins = s.getVoisins();
-            for (Sommet voisin : voisins) {
-                if (!dejaVue.contains(voisin)) {
-                    dejaVue.add(voisin);
-                }
-            }
+        while (dejaVus.size() != sommets.size()) {
+            for (Sommet voisin : s.getVoisins())
+                if (!dejaVus.contains(voisin))
+                    dejaVus.add(voisin);
+
             indice++;
-            if (indice < dejaVue.size()) {
-                s = dejaVue.get(indice);
-            }
-            else {return false;}
+            if (indice < dejaVus.size())
+                s = dejaVus.get(indice);
+            else return false;
         }
         return true;
     }
@@ -389,6 +406,17 @@ public class Graphe {
             if (degre(s)>nbDegreMax)
                 nbDegreMax = degre(s);
         return nbDegreMax;
+    }
+
+    /**
+     * @return le degré minimum des sommets du graphe
+     */
+    public int degreMin() {
+        int nbDegreMin = Integer.MAX_VALUE;
+        for (Sommet s : sommets)
+            if (degre(s)<nbDegreMin)
+                nbDegreMin = degre(s);
+        return nbDegreMin;
     }
 
     /**

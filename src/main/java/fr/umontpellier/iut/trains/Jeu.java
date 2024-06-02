@@ -121,7 +121,13 @@ public class Jeu implements Runnable {
 
         // Créer le graphe
         graphe = new Graphe();
-        tuiles.stream().filter(Tuile::peutEtreSommet).forEach(tuile -> graphe.ajouterSommet(new Sommet(tuile, this)));
+        List<Tuile> tuilePossibles = tuiles.stream().filter(Tuile::peutEtreSommet).toList();
+        tuilePossibles.forEach(tuile -> graphe.ajouterSommet(new Sommet(tuile, this)));
+        tuilePossibles.forEach(tuile -> {
+            for(Tuile voisine : tuile.getVoisines())
+                if(tuilePossibles.contains(voisine))
+                    graphe.getSommet(tuilePossibles.indexOf(tuile)).ajouterVoisin(graphe.getSommet(tuilePossibles.indexOf(voisine)));
+        });
     }
 
     public Map<String, ListeDeCartes> getReserve() {
