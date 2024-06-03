@@ -358,6 +358,17 @@ public class GrapheTest {
     }
 
     @Test
+    public void possede_un_isthme2() {
+        Graphe graphe = new Graphe(6);
+        for(int i = 1; i < 4; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(4));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(3));
+
+        assertTrue(graphe.possedeUnIsthme());
+    }
+
+    @Test
     public void possede_aucun_isthme() {
         Graphe graphe = new Graphe(6);
         for(int i = 1; i < 4; i++)
