@@ -14,9 +14,7 @@ public class Graphe {
     private final Set<Sommet> sommets;
 
     public Graphe(Set<Sommet> sommets) {
-        this();
-        for(Sommet s : sommets)
-            this.sommets.add(new Sommet(s));
+        this.sommets = sommets;
     }
 
     /**
@@ -222,11 +220,32 @@ public class Graphe {
     }
 
     /**
+     * @return {@code true} si et seulement si this est un arbre.
+     * On considère qu'un graphe vide est un arbre.
+     */
+    public boolean estArbre() {
+        return sommets.isEmpty() || estConnexe() && !possedeUnCycle();
+    }
+
+    /**
      * @return true si et seulement si this est une forêt. On considère qu'un arbre est une forêt
      * et que le graphe vide est un arbre.
      */
     public boolean estForet() {
-        throw new RuntimeException("Méthode à implémenter");
+        Set<Set<Sommet>> ensembleClasses = getEnsembleClassesConnexite();
+        System.out.println(ensembleClasses);
+        Graphe g;
+        for(Set<Sommet> classe : ensembleClasses) {
+            g = new Graphe(this, classe);
+            System.out.println(classe + " => " + g.getNbSommets());
+            System.out.println(classe + " => " + g.estConnexe());
+            System.out.println(classe + " => " + g.possedeUnCycle());
+            System.out.println(classe + " => " + g.estArbre());
+            System.out.println(classe + " => " + g.getAretes());
+            if(!g.estArbre())
+                return false;
+        }
+        return true;
     }
 
     /**

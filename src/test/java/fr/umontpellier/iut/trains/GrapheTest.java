@@ -2,6 +2,7 @@ package fr.umontpellier.iut.trains;
 
 import fr.umontpellier.iut.graphes.Sommet;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Timeout;
 
 import fr.umontpellier.iut.graphes.Graphe;
@@ -91,6 +92,7 @@ public class GrapheTest {
         assertTrue(graphe.possedeUnCycle());
         assertEquals(6, graphe.degreMax());
     }
+
 
     @Test
     public void test_distances_tokyo() {
@@ -378,5 +380,219 @@ public class GrapheTest {
         graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(3));
 
         assertFalse(graphe.possedeUnIsthme());
+    }
+
+    @Test
+    public void est_un_arbre() {
+        Graphe graphe = new Graphe(8);
+        for(int i = 3; i < 6; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(1), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(6));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(7));
+
+        assertTrue(graphe.estArbre());
+    }
+
+    @Test
+    public void est_un_arbre_graphe_vide() {
+        Graphe graphe = new Graphe(0);
+
+        assertTrue(graphe.estArbre());
+    }
+
+    @Test
+    public void est_pas_un_arbre_connexe() {
+        Graphe graphe = new Graphe(8);
+        for(int i = 3; i < 6; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(1), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(7));
+
+        assertFalse(graphe.estArbre());
+    }
+
+    @Test
+    public void est_pas_un_arbre_sans_cycle() {
+        Graphe graphe = new Graphe(8);
+        for(int i = 3; i < 6; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(1), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(6));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(7));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(7));
+
+        assertFalse(graphe.estArbre());
+    }
+
+    @Test
+    public void est_une_foret() {
+        Graphe graphe = new Graphe(16);
+        // Arbre 1
+        for(int i = 3; i < 6; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(1), graphe.getSommet(2));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(6));
+        graphe.ajouterArete(graphe.getSommet(5), graphe.getSommet(7));
+        // Arbre 2
+        for(int i = 11; i < 14; i++)
+            graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
+        graphe.ajouterArete(graphe.getSommet(8), graphe.getSommet(10));
+        graphe.ajouterArete(graphe.getSommet(9), graphe.getSommet(10));
+        graphe.ajouterArete(graphe.getSommet(13), graphe.getSommet(14));
+        graphe.ajouterArete(graphe.getSommet(13), graphe.getSommet(15));
+
+        assertTrue(graphe.estForet());
+    }
+
+
+
+
+
+
+
+    Graphe g;
+
+    public void initVide() {
+        g = new Graphe();
+    }
+
+    public void initSommet(int i) {
+        g = new Graphe(i);
+    }
+
+    public void relierUnSommetATous(Sommet s){
+        for (Sommet v : g.getSommets()) {
+            s.ajouterVoisin(v);
+        }
+    }
+
+    public void relierAllSommets() {
+        for (Sommet s : g.getSommets()) {
+            relierUnSommetATous(s);
+        }
+    }
+
+    public void initChaine(int i) {
+        initSommet(i);
+        for (int j = 0; j < i-1; j++) {
+            g.getSommet(j).ajouterVoisin(g.getSommet(j+1));
+        }
+    }
+
+    public void initCycle(int i) {
+        if (i > 2) {
+            initSommet(i);
+            for (int j = 0; j < i-1; j++) {
+                g.getSommet(j).ajouterVoisin(g.getSommet(j+1));
+            }
+            g.getSommet(i-1).ajouterVoisin(g.getSommet(0));
+        }
+    }
+
+    public List<Integer> ajouterChaineNonReliee(int i) {
+        List<Integer> sIndiceAdd = new ArrayList<>();
+        int offset = 777;
+        for (int j = 0; j < i; j++) {
+            while (!g.ajouterSommet(j+offset)) {
+                offset+=10;
+            }
+            sIndiceAdd.add(j+offset);
+        }
+        for (int j = 0; j < i -1; j++) {
+            g.getSommet(j+offset).ajouterVoisin(g.getSommet(j+offset+1));
+        }
+        return sIndiceAdd;
+    }
+    public List<Integer> ajouterCycleNonReliee(int i) {
+        List<Integer> sIndiceAdd = new ArrayList<>();
+        if (i > 2) {
+            int offset = 777;
+            for (int j = 0; j < i; j++) {
+                while (!g.ajouterSommet(j+offset)) {
+                    offset+=10;
+                }
+                sIndiceAdd.add(j+offset);
+            }
+            for (int j = 0; j < i -1; j++) {
+                g.getSommet(j+offset).ajouterVoisin(g.getSommet(j+offset+1));
+            }
+            g.getSommet(offset).ajouterVoisin(g.getSommet(offset+i-1));
+        }
+        return sIndiceAdd;
+    }
+
+    public void ajouterArbreNonReliee(int longueurTronc, int longueurBranche) {
+        //Tronc de longueur longueurTronc et dont chaque branche et reliee à une chqine de longeurBranche
+        List<Integer> indiceTronc = ajouterChaineNonReliee(longueurTronc);
+        for (Integer indice : indiceTronc) {
+            List<Integer> indiceBranche = ajouterChaineNonReliee(longueurBranche);
+            g.getSommet(indice).ajouterVoisin(g.getSommet(indiceBranche.get(0)));
+        }
+    }
+
+    @Disabled
+    @Test
+    public void test_est_arbre_true_vide() {
+        initVide();
+
+        assertTrue(g.estArbre());
+    }
+
+    // @Disabled
+    @Test
+    public void test_est_arbre_true_graine() {
+        initSommet(1);
+
+        assertTrue(g.estArbre());
+    }
+
+    // @Disabled
+    @Test
+    public void test_est_arbre_true_chaine() {
+        initChaine(3);
+
+        assertTrue(g.estArbre());
+    }
+
+    // @Disabled
+    @Test
+    public void test_est_arbre_true_arbre() {
+        initVide();
+        ajouterArbreNonReliee(3, 2);
+
+        assertTrue(g.estArbre());
+    }
+
+    // @Disabled
+    @Test
+    public void test_est_arbre_false_non_connexe() {
+        initChaine(3);
+        ajouterChaineNonReliee(4);
+        ajouterChaineNonReliee(1);
+
+        assertFalse(g.estArbre());
+    }
+
+    // @Disabled
+    @Test
+    public void test_est_arbre_false_non_connexe_bis() {
+        initVide();
+        ajouterArbreNonReliee(3, 4);
+        ajouterChaineNonReliee(1);
+
+        assertFalse(g.estArbre());
+    }
+
+    // @Disabled
+    @Test
+    public void test_est_arbre_false_cycle() {
+        initCycle(33);
+
+        assertFalse(g.estArbre());
     }
 }

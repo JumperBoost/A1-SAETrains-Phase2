@@ -122,6 +122,11 @@ public class Sommet {
         return Objects.hashCode(i);
     }
 
+    @Override
+    public String toString() {
+        return String.valueOf(i);
+    }
+
     public static class SommetBuilder {
         private int i;
         private int surcout = 0;
