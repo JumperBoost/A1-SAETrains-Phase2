@@ -328,19 +328,65 @@ public class Graphe {
      * pré-requis : l'ensemble de départ et le sommet d'arrivée sont inclus dans l'ensemble des sommets de this
      */
     public int getDistance(Set<Sommet> depart, Sommet arrivee) {
-        throw new RuntimeException("Méthode à implémenter");
+        return 0;
     }
 
     /**
      * @return le surcout total minimal du parcours entre le sommet de depart et le sommet d'arrivée
      */
     public int getDistance(Sommet depart, Sommet arrivee) {
+        Set<Sommet> dejaVue = new HashSet<>();
+        dejaVue.add(depart);
+        Sommet s = depart;
+        //Set<Sommet> voisins = depart.getVoisins();
+        Map<Sommet, Integer> donnees = new HashMap<>();
+        donnees.put(s, s.getSurcout());
+
+        boolean commencer = false;
+        int valeurTheorique = 999999998;
+
+        while (!(donnees.size()==1) && !donnees.containsKey(arrivee)){
+            if (!dejaVue.contains(s)){
+                dejaVue.add(s);
+                for (Sommet sommet : s.getVoisins()){
+                    if (!donnees.containsKey(sommet)){
+                        donnees.put(sommet, sommet.getSurcout() + donnees.get(s));
+                    }
+                    else if (donnees.get(sommet)>donnees.get(s) + sommet.getSurcout()){
+                        donnees.remove(sommet);
+                        donnees.put(sommet, donnees.get(s) + sommet.getSurcout());
+                    }
+                }
+                donnees.remove(s);
+            }
+            commencer = false;
+            for (Sommet newSommet : donnees.keySet()){
+                if (!dejaVue.contains(newSommet)){
+                    if (!commencer){
+                        valeurTheorique = donnees.get(newSommet);
+                        s = newSommet;
+                        commencer = true;
+
+                    }
+                    else {
+                        if (valeurTheorique > donnees.get(newSommet)){
+                            valeurTheorique = donnees.get(newSommet);
+                            s = newSommet;
+                        }
+                    }
+                }
+            }
+        }
+        return donnees.get(arrivee);
+/*
         if (depart == arrivee) {
             return arrivee.getSurcout();
         }
         List<Integer> surcouts = new ArrayList<>();
-        for (Sommet s : depart.getVoisins()){
+        Sommet ancien;
+        for (Sommet s : suiteVoisins(ancien)){
             surcouts.add(getDistance(s, arrivee) + depart.getSurcout());
+            ancien = s;
         }
         if (!surcouts.isEmpty()) {
             int plusPetit = surcouts.get(0);
@@ -352,7 +398,13 @@ public class Graphe {
 
             return plusPetit;
         }
-        return 0;
+        return 0;*/
+    }
+
+    private Set<Sommet> suiteVoisins(Sommet ancienSommet, Sommet nouveuSommet){
+        Set<Sommet> voisins = nouveuSommet.getVoisins();
+        voisins.remove(ancienSommet);
+        return voisins;
     }
 
     /**
