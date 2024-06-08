@@ -1,6 +1,8 @@
 package fr.umontpellier.iut.graphes;
 
 
+import fr.umontpellier.iut.trains.Joueur;
+
 import java.util.*;
 
 /**
@@ -100,7 +102,25 @@ public class Graphe {
      * L'ensemble de joueurs du nouveau sommet sera l'union des ensembles de joueurs des sommets fusionnés.
      */
     public static Graphe fusionnerEnsembleSommets(Graphe g, Set<Sommet> ensemble) {
-        throw new RuntimeException("Méthode à implémenter");
+        int indice = g.getSommet(0).getIndice();
+        int surcout = g.getSommet(0).getSurcout();
+        int nbPointVictoire = g.getSommet(0).getNbPointsVictoire();
+        Set<Integer> joueurs = new HashSet<>();
+        Graphe newGraphe = new Graphe(g.getSommets());
+        int i=1;
+        for (Sommet s : ensemble){
+            if (indice>s.getIndice()){
+                indice = s.getIndice();
+            }
+            surcout = s.getSurcout();
+            nbPointVictoire = s.getNbPointsVictoire();
+            for (int j : s.getJoueurs()){
+                if (!joueurs.contains(j)){
+                    joueurs.add(j);
+                }
+            }
+        }
+        return newGraphe;
     }
 
     /**
