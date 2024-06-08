@@ -622,10 +622,20 @@ public class GrapheTest {
         s.add(sommetBuilder.createSommet());
 
         Graphe g = new Graphe(s);
+        Sommet newSommet = new Sommet(graphe.getSommet(1));
+        boolean depasser = false;
+        for (Sommet s2 : g.getSommets()){
+            if (!depasser && s2.getIndice()==1){
+                depasser = true;
+            } else if (s2.getIndice()==1) {
+                newSommet = s2;
+                break;
+            }
+        }
 
         assertEquals(g.getSommets() ,Graphe.fusionnerEnsembleSommets(graphe, petitS).getSommets());
         Graphe nouveau = Graphe.fusionnerEnsembleSommets(graphe, petitS);
-        //assertEquals(sommetBuilder.createSommet().getSurcout(), nouveau.getSommet(1).getSurcout());
+        assertEquals(sommetBuilder.createSommet().getSurcout(), newSommet.getIndice());
         assertEquals(sommetBuilder.createSommet().getNbPointsVictoire(), nouveau.getSommet(1).getNbPointsVictoire());
         assertEquals(sommetBuilder.createSommet().getJoueurs(), nouveau.getSommet(1).getJoueurs());
     }
