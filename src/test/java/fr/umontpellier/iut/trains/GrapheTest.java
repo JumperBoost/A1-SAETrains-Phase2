@@ -595,4 +595,38 @@ public class GrapheTest {
 
         assertFalse(g.estArbre());
     }
+
+    @Test
+    public void test_fusionnerEnsembleSommets(){
+        Graphe graphe = new Graphe(0);
+        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(0).setSurcout(10).setNbPointsVictoire(2).setJoueurs(new HashSet<>(List.of(0, 1))).createSommet());
+        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(1).setSurcout(12).setNbPointsVictoire(4).setJoueurs(new HashSet<>(List.of(1, 2))).createSommet());
+        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(2).setSurcout(14).setNbPointsVictoire(6).setJoueurs(new HashSet<>(List.of(1, 2))).createSommet());
+        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(3).setSurcout(16).setNbPointsVictoire(8).setJoueurs(new HashSet<>(List.of(0, 2))).createSommet());
+        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(4).setSurcout(18).setNbPointsVictoire(10).setJoueurs(new HashSet<>(List.of(0, 1))).createSommet());
+        Set<Sommet> petitS = new HashSet<>();
+
+        petitS.add(graphe.getSommet(1));
+        petitS.add(graphe.getSommet(2));
+        petitS.add(graphe.getSommet(3));
+
+        Set<Sommet> s = graphe.getSommets();
+
+        Sommet.SommetBuilder sommetBuilder = new Sommet.SommetBuilder();
+        sommetBuilder.setIndice(1);
+        sommetBuilder.setSurcout(42);
+        sommetBuilder.setNbPointsVictoire(18);
+        Set<Integer> joueurs = new HashSet<>();
+        sommetBuilder.setJoueurs(new HashSet<>(List.of(0, 1, 2)));
+
+        s.add(sommetBuilder.createSommet());
+
+        Graphe g = new Graphe(s);
+
+        assertEquals(g.getSommets() ,Graphe.fusionnerEnsembleSommets(graphe, petitS).getSommets());
+        Graphe nouveau = Graphe.fusionnerEnsembleSommets(graphe, petitS);
+        //assertEquals(sommetBuilder.createSommet().getSurcout(), nouveau.getSommet(1).getSurcout());
+        assertEquals(sommetBuilder.createSommet().getNbPointsVictoire(), nouveau.getSommet(1).getNbPointsVictoire());
+        assertEquals(sommetBuilder.createSommet().getJoueurs(), nouveau.getSommet(1).getJoueurs());
+    }
 }
