@@ -124,9 +124,12 @@ public class Jeu implements Runnable {
         List<Tuile> tuilePossibles = tuiles.stream().filter(Tuile::peutEtreSommet).toList();
         tuilePossibles.forEach(tuile -> graphe.ajouterSommet(new Sommet(tuile, this)));
         tuilePossibles.forEach(tuile -> {
-            for(Tuile voisine : tuile.getVoisines())
-                if(tuilePossibles.contains(voisine))
-                    graphe.getSommet(tuilePossibles.indexOf(tuile)).ajouterVoisin(graphe.getSommet(tuilePossibles.indexOf(voisine)));
+            for(Tuile voisine : tuile.getVoisines()) {
+                if (tuilePossibles.contains(voisine)) {
+                    graphe.getSommet(tuiles.indexOf(tuile)).ajouterVoisin(graphe.getSommet(tuiles.indexOf(voisine)));
+                    graphe.getSommet(tuiles.indexOf(voisine)).ajouterVoisin(graphe.getSommet(tuiles.indexOf(tuile)));
+                }
+            }
         });
     }
 
@@ -428,6 +431,6 @@ public class Jeu implements Runnable {
      */
     public Graphe getGraphe(Joueur joueur) {
         Set<Sommet> sommets = graphe.getSommets().stream().filter(sommet -> sommet.getJoueurs().contains(joueurs.indexOf(joueur))).collect(Collectors.toSet());
-        return new Graphe(sommets);
+        return new Graphe(graphe, sommets);
     }
 }
