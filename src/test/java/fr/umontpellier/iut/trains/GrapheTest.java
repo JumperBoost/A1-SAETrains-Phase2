@@ -10,6 +10,7 @@ import fr.umontpellier.iut.trains.plateau.Plateau;
 
 import java.util.*;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Timeout(value = 1, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
@@ -596,49 +597,92 @@ public class GrapheTest {
         assertFalse(g.estArbre());
     }
 
-    @Disabled
     @Test
-    public void test_fusionnerEnsembleSommets(){
-        Graphe graphe = new Graphe(0);
-        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(0).setSurcout(10).setNbPointsVictoire(2).setJoueurs(new HashSet<>(List.of(0, 1))).createSommet());
-        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(1).setSurcout(12).setNbPointsVictoire(4).setJoueurs(new HashSet<>(List.of(1, 2))).createSommet());
-        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(2).setSurcout(14).setNbPointsVictoire(6).setJoueurs(new HashSet<>(List.of(1, 2))).createSommet());
-        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(3).setSurcout(16).setNbPointsVictoire(8).setJoueurs(new HashSet<>(List.of(0, 2))).createSommet());
-        graphe.ajouterSommet(new Sommet.SommetBuilder().setIndice(4).setSurcout(18).setNbPointsVictoire(10).setJoueurs(new HashSet<>(List.of(0, 1))).createSommet());
-        Set<Sommet> petitS = new HashSet<>();
+    public void test_fusionnerEnsembleSommets_vide() {
+        initSommet(10);
+        Graphe res = Graphe.fusionnerEnsembleSommets(g, new HashSet<>());
 
-        petitS.add(graphe.getSommet(1));
-        petitS.add(graphe.getSommet(2));
-        petitS.add(graphe.getSommet(3));
+        assertNotSame(g, res);
+        assertEquals(10, g.getNbSommets());
+        assertEquals(10, res.getNbSommets());
+        assertTrue(res.getSommets().containsAll(g.getSommets()));
+    }
 
-        Set<Sommet> s = graphe.getSommets();
+    // @Disabled
+    @Test
+    public void test_fusionnerEnsembleSommets_non_inclus_dans_g() {
+        initVide();
+        Sommet s = new Sommet.SommetBuilder().setIndice(1).createSommet();
+        Graphe res = Graphe.fusionnerEnsembleSommets(g, new HashSet<>(Set.of(s)));
 
-        Sommet.SommetBuilder sommetBuilder = new Sommet.SommetBuilder();
-        sommetBuilder.setIndice(1);
-        sommetBuilder.setSurcout(42);
-        sommetBuilder.setNbPointsVictoire(18);
-        Set<Integer> joueurs = new HashSet<>();
-        sommetBuilder.setJoueurs(new HashSet<>(List.of(0, 1, 2)));
+        assertNotSame(g, res);
+        assertEquals(0, g.getNbSommets());
+        assertEquals(1, res.getNbSommets());
+        assertTrue(res.getSommets().contains(s));
+        assertFalse(g.getSommets().contains(s));
+        //VERIFIER LES PRE-REQUIS AVEC LES EXCEPTIONS ?
+    }
 
-        s.add(sommetBuilder.createSommet());
+    public void ajouterAretePratique(int s1, int s2) {
+        g.getSommet(s1).ajouterVoisin(g.getSommet(s2));
+        g.getSommet(s2).ajouterVoisin(g.getSommet(s1));
+    }
 
-        Graphe g = new Graphe(s);
-        Sommet newSommet = new Sommet(graphe.getSommet(1));
-        boolean depasser = false;
-        for (Sommet s2 : g.getSommets()){
-            if (!depasser && s2.getIndice()==1){
-                depasser = true;
-            } else if (s2.getIndice()==1) {
-                newSommet = s2;
-                break;
-            }
-        }
+    // @Disabled
+    @Test
+    public void test_fusionnerEnsembleSommets() {
+        initSommet(10);
+        relierAllSommets();
+        Set<Sommet> sommets = new HashSet<>(g.getSommets());
+        int indice;
+        ajouterAretePratique(0, indice = ajouterChaineNonReliee(32).get(0));
 
-        assertEquals(g.getSommets() ,Graphe.fusionnerEnsembleSommets(graphe, petitS).getSommets());
-        Graphe nouveau = Graphe.fusionnerEnsembleSommets(graphe, petitS);
-        assertEquals(sommetBuilder.createSommet().getSurcout(), newSommet.getIndice());
-        assertEquals(sommetBuilder.createSommet().getNbPointsVictoire(), nouveau.getSommet(1).getNbPointsVictoire());
-        assertEquals(sommetBuilder.createSommet().getJoueurs(), nouveau.getSommet(1).getJoueurs());
+        Graphe res = Graphe.fusionnerEnsembleSommets(g, sommets);
+        Sommet s = res.getSommet(0);
+
+        assertEquals(Set.of(res.getSommet(indice)), s.getVoisins());
+        assertNotSame(g, res);
+        assertEquals(10, sommets.size());
+        assertEquals(42, g.getNbSommets());
+        assertEquals(33, res.getNbSommets());
+        assertNotSame(g.getSommet(0), s);
+        assertEquals(0, s.getIndice());
+        assertEquals(0, s.getSurcout());
+        assertEquals(0, s.getNbPointsVictoire());
+        assertEquals(0, s.getJoueurs().size());
+        assertFalse(res.getSommets().containsAll(g.getSommets()));
+    }
+
+    // @Disabled
+    @Test
+    public void test_fusionnerEnsembleSommets_valeurs() {
+        Set<Integer> nullTest = new HashSet<>();
+        nullTest.add(null);
+        Sommet s1 = new Sommet.SommetBuilder().setIndice(7).setSurcout(1).setNbPointsVictoire(10).setJoueurs(new HashSet<>(Set.of(1))).createSommet();
+        Sommet s2 = new Sommet.SommetBuilder().setIndice(70).setSurcout(10).setNbPointsVictoire(5).setJoueurs(new HashSet<>(Set.of(2))).createSommet();
+        Sommet s3 = new Sommet.SommetBuilder().setIndice(19).setSurcout(3).setNbPointsVictoire(13).setJoueurs(new HashSet<>(nullTest)).createSommet();
+        Sommet s4 = new Sommet.SommetBuilder().setIndice(1).setSurcout(1).setNbPointsVictoire(1).setJoueurs(new HashSet<>(Set.of(3))).createSommet();
+        initVide();
+        g.ajouterSommet(s1);
+        g.ajouterSommet(s2);
+        g.ajouterSommet(s3);
+        g.ajouterSommet(s4);
+
+        Graphe res = Graphe.fusionnerEnsembleSommets(g, new HashSet<>(Set.of(s1, s2, s3)));
+        Sommet s = res.getSommet(7);
+
+        assertNotSame(g, res);
+        assertEquals(4, g.getNbSommets());
+        assertEquals(2, res.getNbSommets());
+        assertNotSame(g.getSommet(0), s);
+        assertNotEquals(g.getSommet(0), s);
+        assertEquals(7, s.getIndice());
+        assertEquals(14, s.getSurcout());
+        assertEquals(28, s.getNbPointsVictoire());
+        assertEquals(3, s.getJoueurs().size());
+        assertTrue(s.getJoueurs().containsAll(Set.of(1, 2)));
+        assertTrue(s.getJoueurs().contains(null));
+        assertFalse(res.getSommets().containsAll(g.getSommets()));
     }
 
     @Test

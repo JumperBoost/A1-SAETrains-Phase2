@@ -1,8 +1,6 @@
 package fr.umontpellier.iut.graphes;
 
 
-import fr.umontpellier.iut.trains.Joueur;
-
 import java.util.*;
 
 /**
@@ -102,34 +100,34 @@ public class Graphe {
      * L'ensemble de joueurs du nouveau sommet sera l'union des ensembles de joueurs des sommets fusionnés.
      */
     public static Graphe fusionnerEnsembleSommets(Graphe g, Set<Sommet> ensemble) {
-        List<Integer> indice = new ArrayList<>();
+        Set<Integer> indices = new HashSet<>();
         int surcout = 0;
         int nbPointVictoire = 0;
         Set<Integer> joueurs = new HashSet<>();
-        Graphe newGraphe = new Graphe(g.getSommets());
+        Graphe newGraphe = new Graphe(new HashSet<>(g.getSommets()));
 
+        Set<Sommet> voisins = new HashSet<>();
         for (Sommet s : ensemble){
-            indice.add(s.getIndice());
-            surcout = surcout + s.getSurcout();
-            nbPointVictoire = nbPointVictoire + s.getNbPointsVictoire();
-            for (int j : s.getJoueurs()) {
-                if (!joueurs.contains(j)) {
-                    joueurs.add(j);
-                }
-            }
+            indices.add(s.getIndice());
+            surcout += s.getSurcout();
+            nbPointVictoire += s.getNbPointsVictoire();
+            joueurs.addAll(s.getJoueurs());
+            voisins.addAll(s.getVoisins());
+            newGraphe.supprimerSommet(s);
         }
+        voisins.removeAll(ensemble);
         Sommet.SommetBuilder sommetBuilder = new Sommet.SommetBuilder();
-        int newIndice = indice.get(0);
-        for (int i = 1; i < indice.size(); i++){
-            if (newIndice > indice.get(i)){
-                newIndice = indice.get(i);
-            }
-        }
-        sommetBuilder.setIndice(newIndice);
+        int indice = indices.stream().min(Integer::compareTo).orElse(0);
+        sommetBuilder.setIndice(indice);
         sommetBuilder.setJoueurs(joueurs);
         sommetBuilder.setSurcout(surcout);
         sommetBuilder.setNbPointsVictoire(nbPointVictoire);
         newGraphe.ajouterSommet(sommetBuilder.createSommet());
+        Sommet newSommet = newGraphe.getSommet(indice);
+        voisins.forEach(v -> {
+            v.ajouterVoisin(newSommet);
+            newSommet.ajouterVoisin(v);
+        });
         return newGraphe;
     }
 
@@ -200,6 +198,18 @@ public class Graphe {
      */
     public boolean ajouterSommet(Sommet s) {
         return sommets.add(s);
+    }
+
+    /**
+     * Supprime un sommet et ses voisins au graphe s'il est présent
+     *
+     * @params s le sommet à supprimer
+     * Pré-requis : le sommet {@code s} inclus dans le graphe
+     * @return true si le sommet a été supprimé, false sinon
+     */
+    public boolean supprimerSommet(Sommet s) {
+        s.getVoisins().forEach(v -> v.supprimerVoisin(s));
+        return sommets.remove(s);
     }
 
     /**

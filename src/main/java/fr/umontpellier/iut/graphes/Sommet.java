@@ -98,7 +98,8 @@ public class Sommet implements Comparator<Sommet> {
     }
 
     public void ajouterVoisin(Sommet voisin) {
-        voisins.add(voisin);
+        if(voisin != null && voisin != this)
+            voisins.add(voisin);
     }
 
     /**
