@@ -218,6 +218,17 @@ public class Graphe {
     }
 
     /**
+     * Récupérer la séquence de degré du graphe
+     */
+    public List<Integer> getSequenceDegres() {
+        List<Integer> sequences = new ArrayList<>();
+        for(Sommet s : sommets)
+            sequences.add(degre(s));
+        sequences.sort(Integer::compareTo);
+        return sequences;
+    }
+
+    /**
      * @return true si et seulement si this est complet.
      */
     public boolean estComplet() {
@@ -228,7 +239,7 @@ public class Graphe {
      * @return true si et seulement si this est une chaîne. On considère que le graphe vide est une chaîne.
      */
     public boolean estChaine() {
-        if (getNbAretes() == getNbSommets()-1){
+        if (getNbAretes() == getNbSommets()-1 || getNbSommets() == 0){
             int nbBout = 0;
             for (Sommet s : sommets){
                 if (s.getVoisins().size() == 1)
@@ -269,15 +280,9 @@ public class Graphe {
      */
     public boolean estForet() {
         Set<Set<Sommet>> ensembleClasses = getEnsembleClassesConnexite();
-        System.out.println(ensembleClasses);
         Graphe g;
         for(Set<Sommet> classe : ensembleClasses) {
             g = new Graphe(this, classe);
-            System.out.println(classe + " => " + g.getNbSommets());
-            System.out.println(classe + " => " + g.estConnexe());
-            System.out.println(classe + " => " + g.possedeUnCycle());
-            System.out.println(classe + " => " + g.estArbre());
-            System.out.println(classe + " => " + g.getAretes());
             if(!g.estArbre())
                 return false;
         }
@@ -354,41 +359,29 @@ public class Graphe {
      * (si deux sommets ont le même degré, alors on les ordonne par indice croissant).
      */
     public Map<Integer, Set<Sommet>> getColorationGloutonne() {
-        Map<Integer, Set<Sommet>> coloration = new HashMap<>();
-        Graphe newGraphe = new Graphe(sommets);
-        int nbCouleurs = degreMax() + 1;
-        for (int i=1; i<=nbCouleurs; i++){
-            coloration.put(i, new HashSet<>());
-        }
-        Set<Sommet> AVoir = ordonerSommetDecroissant(sommets);
-        Set<Sommet> pourGraphe;
-        Sommet sommet;
-        boolean trouver;
-        int i;
-        for (Sommet s : AVoir) {
-            sommet = s;
-            trouver=false;
-            i = 0;
-            while (i <= nbCouleurs && !trouver) {
-                for (Sommet voisin : sommet.getVoisins()) {
-                    if (!coloration.get(i).contains(voisin) && !trouver) {
-                        coloration.get(i).add(sommet);
-                        trouver = true;
-                    }
-                }
-                i++;
+        Map<Integer, Set<Sommet>> colorations = new HashMap<>();
+        if(getNbSommets() > 0) {
+            int nbCouleurs = degreMax() + 1;
+            // Ajouter toutes les couleurs possibles
+            for (int i = 1; i <= nbCouleurs; i++)
+                colorations.put(i, new HashSet<>());
+            PriorityQueue<Sommet> queue = new PriorityQueue<>((a, b) -> degre(a) == degre(b) ? a.getIndice() - b.getIndice() : degre(b) - degre(a));
+            queue.addAll(sommets);
+
+            Sommet sommet;
+            while (!queue.isEmpty()) {
+                sommet = queue.poll();
+                int i = 1;
+                Set<Sommet> voisins = sommet.getVoisins();
+                do {
+                    if (colorations.get(i).stream().noneMatch(voisins::contains))
+                        colorations.get(i).add(sommet);
+                } while (!colorations.get(i++).contains(sommet));
             }
+            // Supprimer toutes les couleurs inutilisées
+            colorations.entrySet().removeIf(e -> e.getValue().isEmpty());
         }
-        return coloration;
-    }
-
-    private Set<Sommet> ordonerSommetDecroissant(Set<Sommet> s){
-        Set<Sommet> ordonner = new TreeSet<>();
-        for (Sommet sommet : s){
-            ordonner.add(sommet);
-        }
-
-        return ordonner;
+        return colorations;
     }
 
     /**
@@ -476,20 +469,22 @@ public class Graphe {
      * @return true si et seulement si this est connexe.
      */
     public boolean estConnexe() {
-        List<Sommet> dejaVus = new ArrayList<>();
-        Sommet s = getSommets().iterator().next();
-        dejaVus.add(s);
-        Set<Sommet> voisins;
-        int indice = 0;
-        while (dejaVus.size() != sommets.size()) {
-            for (Sommet voisin : s.getVoisins())
-                if (!dejaVus.contains(voisin))
-                    dejaVus.add(voisin);
+        if(getNbSommets() > 1) {
+            List<Sommet> dejaVus = new ArrayList<>();
+            Sommet s = getSommets().iterator().next();
+            dejaVus.add(s);
+            Set<Sommet> voisins;
+            int indice = 0;
+            while (dejaVus.size() != sommets.size()) {
+                for (Sommet voisin : s.getVoisins())
+                    if (!dejaVus.contains(voisin))
+                        dejaVus.add(voisin);
 
-            indice++;
-            if (indice < dejaVus.size())
-                s = dejaVus.get(indice);
-            else return false;
+                indice++;
+                if (indice < dejaVus.size())
+                    s = dejaVus.get(indice);
+                else return false;
+            }
         }
         return true;
     }

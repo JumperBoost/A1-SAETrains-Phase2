@@ -186,7 +186,6 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        System.out.println(graphe.getSommets());
         for (int i=1; i<20-1; i++)
             graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
         graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(20-2));
@@ -542,7 +541,7 @@ public class GrapheTest {
         }
     }
 
-    // @Disabled
+  
     @Test
     public void test_est_arbre_true_vide() {
         initVide();
@@ -550,7 +549,7 @@ public class GrapheTest {
         assertTrue(g.estArbre());
     }
 
-    // @Disabled
+  
     @Test
     public void test_est_arbre_true_graine() {
         initSommet(1);
@@ -558,7 +557,7 @@ public class GrapheTest {
         assertTrue(g.estArbre());
     }
 
-    // @Disabled
+  
     @Test
     public void test_est_arbre_true_chaine() {
         initChaine(3);
@@ -574,7 +573,7 @@ public class GrapheTest {
         assertTrue(g.estArbre());
     }
 
-    // @Disabled
+  
     @Test
     public void test_est_arbre_false_non_connexe() {
         initChaine(3);
@@ -584,7 +583,7 @@ public class GrapheTest {
         assertFalse(g.estArbre());
     }
 
-    // @Disabled
+  
     @Test
     public void test_est_arbre_false_non_connexe_bis() {
         initVide();
@@ -594,7 +593,7 @@ public class GrapheTest {
         assertFalse(g.estArbre());
     }
 
-    // @Disabled
+  
     @Test
     public void test_est_arbre_false_cycle() {
         initCycle(33);
@@ -613,7 +612,7 @@ public class GrapheTest {
         assertTrue(res.getSommets().containsAll(g.getSommets()));
     }
 
-    // @Disabled
+  
     @Test
     public void test_fusionnerEnsembleSommets_non_inclus_dans_g() {
         initVide();
@@ -628,12 +627,7 @@ public class GrapheTest {
         //VERIFIER LES PRE-REQUIS AVEC LES EXCEPTIONS ?
     }
 
-    public void ajouterAretePratique(int s1, int s2) {
-        g.getSommet(s1).ajouterVoisin(g.getSommet(s2));
-        g.getSommet(s2).ajouterVoisin(g.getSommet(s1));
-    }
-
-    // @Disabled
+  
     @Test
     public void test_fusionnerEnsembleSommets() {
         initSommet(10);
@@ -658,7 +652,7 @@ public class GrapheTest {
         assertFalse(res.getSommets().containsAll(g.getSommets()));
     }
 
-    // @Disabled
+  
     @Test
     public void test_fusionnerEnsembleSommets_valeurs() {
         Set<Integer> nullTest = new HashSet<>();
@@ -690,94 +684,135 @@ public class GrapheTest {
         assertFalse(res.getSommets().containsAll(g.getSommets()));
     }
 
+  
     @Test
-    public void test_coloration_gloutonne() {  // soucis : genere 10 combinaisons alors que 3 parmi 5 ca fait 20. Il manque la bonne séquence egale au graphe
-        Graphe g = new Graphe();
-
-        Sommet.SommetBuilder sommet = new Sommet.SommetBuilder();
-        sommet.setIndice(1);
-        Sommet s = sommet.createSommet();
-
-        sommet.setIndice(2);
-        Sommet s2 = sommet.createSommet();
-
-        sommet.setIndice(3);
-        Sommet s3 = sommet.createSommet();
-
-        sommet.setIndice(4);
-        Sommet s4 = sommet.createSommet();
-
-        sommet.setIndice(5);
-        Sommet s5 = sommet.createSommet();
-
-
-        g.ajouterSommet(s);
-        g.ajouterSommet(s2);
-        g.ajouterSommet(s3);
-        g.ajouterSommet(s4);
-        g.ajouterSommet(s5);
-
-        g.ajouterArete(s, s2);
-        g.ajouterArete(s2, s3);
-        g.ajouterArete(s3, s4);
-        g.ajouterArete(s4, s5);
-        g.ajouterArete(s5, s2);
-        g.ajouterArete(s, s5);
-
-
-        Map<Integer, Set<Sommet>> map = g.getColorationGloutonne();
-
-        assertFalse(g.estCycle());
+    public void test_coloration_gloutonne_g_vide() {
+        initVide();
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        System.out.println(res.entrySet());
+        assertIterableEquals(List.of(), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
     }
 
+  
     @Test
-    public void test_coloration_gloutonne_indice_de_meme_degre() {  // soucis : genere 10 combinaisons alors que 3 parmi 5 ca fait 20. Il manque la bonne séquence egale au graphe
-        Graphe g = new Graphe();
+    public void test_coloration_gloutonne_graine() {
+        initSommet(1);
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(0))));
+        assertIterableEquals(List.of(0), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
-        Sommet.SommetBuilder sommet = new Sommet.SommetBuilder();
-        sommet.setIndice(1);
-        Sommet s = sommet.createSommet();
+  
+    @Test
+    public void test_coloration_gloutonne_arete() {
+        initChaine(2);
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(0))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(1))));
+        assertIterableEquals(List.of(1,1), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
-        sommet.setIndice(2);
-        Sommet s2 = sommet.createSommet();
+  
+    @Test
+    public void test_coloration_gloutonne_chaine_ordre_3() {
+        initChaine(3);
+        //seq: 2-1-1
+        //indice: 1-0-2
+        //coloration: 1-2-2
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(1))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(0), g.getSommet(2))));
+        assertIterableEquals(List.of(1,1,2), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
-        sommet.setIndice(3);
-        Sommet s3 = sommet.createSommet();
+  
+    @Test
+    public void test_coloration_gloutonne_chaine_ordre_4() {
+        initChaine(4);
+        //seq: 2-2-1-1
+        //indice: 1-2-0-3
+        //coloration: 1-2-2-1
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(1), g.getSommet(3))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(0), g.getSommet(2))));
+        assertIterableEquals(List.of(1,1,2,2), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
-        sommet.setIndice(4);
-        Sommet s4 = sommet.createSommet();
+  
+    @Test
+    public void test_coloration_gloutonne_chaine_ordre_5() {
+        initChaine(5);
+        //seq: 2-2-2-1-1
+        //indice: 1-2-3-0-4
+        //coloration: 1-2-1-2-2
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(1), g.getSommet(3))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(0), g.getSommet(2), g.getSommet(4))));
+        assertIterableEquals(List.of(1,1,2,2,2), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
+  
+    @Test
+    public void test_coloration_gloutonne_cycle_ordre_3() {
+        initCycle(3);
+        //seq: 2-2-2
+        //indice: 0-1-2
+        //coloration: 1-2-3
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(0))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(1))));
+        res.put(3, new HashSet<>(Set.of(g.getSommet(2))));
+        assertIterableEquals(List.of(2,2,2), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
+  
+    @Test
+    public void test_coloration_gloutonne_cycle_ordre_4() {
+        initCycle(4);
+        //seq: 2-2-2-2
+        //indice: 0-1-2-3
+        //coloration: 1-2-1-2
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(0), g.getSommet(2))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(1), g.getSommet(3))));
+        assertIterableEquals(List.of(2,2,2,2), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
-        g.ajouterSommet(s);
-        g.ajouterSommet(s2);
-        g.ajouterSommet(s3);
-        g.ajouterSommet(s4);
+  
+    @Test
+    public void test_coloration_gloutonne_cycle_ordre_5() {
+        initCycle(5);
+        //seq: 2-2-2-2-2
+        //indice: 0-1-2-3-4
+        //coloration: 1-2-1-2-3
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(0), g.getSommet(2))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(1), g.getSommet(3))));
+        res.put(3, new HashSet<>(Set.of(g.getSommet(4))));
+        assertIterableEquals(List.of(2,2,2,2,2), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
+    }
 
-        g.ajouterArete(s, s2);
-        g.ajouterArete(s2, s3);
-        g.ajouterArete(s3, s4);
-        g.ajouterArete(s,s4);
-
-        Map<Integer, Set<Sommet>> map = g.getColorationGloutonne();
-        for (Integer a : map.keySet()) {
-            assertTrue(a.equals(1) || a.equals(2));
-            assertNotEquals(3, (int) a);
-        }
-        Set<Sommet> ens = new HashSet<>();
-        ens.add(s);
-        ens.add(s3);
-
-        Set<Sommet> ens2 = new HashSet<>();
-        ens2.add(s2);
-        ens2.add(s4);
-
-        assertTrue(map.get(1).containsAll(ens));
-        assertTrue(map.get(2).containsAll(ens2));
-        assertFalse(map.get(1).containsAll(ens2));
-        assertEquals(2, map.size());
-
-        assertFalse(map.isEmpty());
-        assertTrue(g.estCycle());
+  
+    @Test
+    public void test_coloration_gloutonne_croix() {
+        initSommet(5);
+        relierUnSommetATous(g.getSommet(2));
+        //seq: 4-1-1-1-1
+        //indice: 2-0-1-3-4
+        //coloration: 1-2-2-2-2
+        Map<Integer, Set<Sommet>> res= new HashMap<>();
+        res.put(1, new HashSet<>(Set.of(g.getSommet(2))));
+        res.put(2, new HashSet<>(Set.of(g.getSommet(0), g.getSommet(1), g.getSommet(3), g.getSommet(4))));
+        assertIterableEquals(List.of(1,1,1,1,4), g.getSequenceDegres());
+        assertIterableEquals(res.entrySet(), g.getColorationGloutonne().entrySet());
     }
 }
