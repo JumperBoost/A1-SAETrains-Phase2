@@ -48,8 +48,7 @@ public class Sommet {
 
 
     public Sommet(Tuile tuile, Jeu jeu) {
-        Graphe g = jeu.getGraphe();
-        this.i = g.getNbSommets();
+        this.i = jeu.getTuiles().indexOf(tuile);
         this.surcout = tuile.getSurcout();
         this.joueurs = jeu.getJoueurs().stream().filter(tuile::hasRail).map(joueur -> jeu.getJoueurs().indexOf(joueur)).collect(Collectors.toSet());
         this.nbPointsVictoire = tuile.getNbPointsVictoire();
@@ -97,7 +96,8 @@ public class Sommet {
     }
 
     public void ajouterVoisin(Sommet voisin) {
-        voisins.add(voisin);
+        if(voisin != null && voisin != this)
+            voisins.add(voisin);
     }
 
     /**

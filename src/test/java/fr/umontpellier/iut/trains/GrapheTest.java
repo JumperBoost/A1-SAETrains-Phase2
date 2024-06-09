@@ -2,7 +2,6 @@ package fr.umontpellier.iut.trains;
 
 import fr.umontpellier.iut.graphes.Sommet;
 import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Timeout;
 
 import fr.umontpellier.iut.graphes.Graphe;
@@ -163,7 +162,7 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=1; i<graphe.getNbSommets(); i++)
+        for (int i=1; i<20; i++)
             graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
         graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(3));
 
@@ -175,7 +174,7 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=1; i<graphe.getNbSommets()-1; i++)
+        for (int i=1; i<20-1; i++)
             graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
 
         assertFalse(graphe.estChaine());
@@ -186,9 +185,10 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=1; i<graphe.getNbSommets()-1; i++)
+        System.out.println(graphe.getSommets());
+        for (int i=1; i<20-1; i++)
             graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
-        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(graphe.getNbSommets()-2));
+        graphe.ajouterArete(graphe.getSommet(0), graphe.getSommet(20-2));
 
         assertFalse(graphe.estChaine());
     }
@@ -198,7 +198,7 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=0; i<graphe.getNbSommets(); i++){
+        for (int i=0; i<20; i++){
             if (!(i==0)){
                 graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
             }
@@ -212,10 +212,10 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=0; i<graphe.getSommets().size(); i++){
+        for (int i=0; i<20; i++){
             if (graphe.getNbSommets()>1) {
-                for (int n = 0; n < graphe.getNbSommets()-1; n++) {
-                    for (int x = n+1; x < graphe.getNbSommets(); x++) {
+                for (int n = 0; n < 20-1; n++) {
+                    for (int x = n+1; x < 20; x++) {
                         if (!graphe.getSommet(n).estVoisin(graphe.getSommet(x))){
                             graphe.ajouterArete(graphe.getSommet(n), graphe.getSommet(x));
                         }
@@ -247,7 +247,7 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=0; i<graphe.getNbSommets(); i++){
+        for (int i=0; i<20; i++){
             if (!(i==0)){
                 graphe.ajouterArete(graphe.getSommet(i-1), graphe.getSommet(i));
             }
@@ -262,10 +262,10 @@ public class GrapheTest {
         Jeu jeu = new Jeu(new String[]{"Lois", "Clark"}, new String[]{}, Plateau.OSAKA);
 
         Graphe graphe = jeu.getGraphe();
-        for (int i=0; i<graphe.getNbSommets(); i++){
+        for (int i=0; i<20; i++){
             if (graphe.getNbSommets()>1) {
-                for (int n = 0; n < graphe.getNbSommets()-1; n++) {
-                    for (int x = n+1; x < graphe.getNbSommets(); x++) {
+                for (int n = 0; n < 20-1; n++) {
+                    for (int x = n+1; x < 20; x++) {
                         if (!graphe.getSommet(n).estVoisin(graphe.getSommet(x))){
                             graphe.ajouterArete(graphe.getSommet(n), graphe.getSommet(x));
                         }
@@ -467,7 +467,7 @@ public class GrapheTest {
 
     public void relierUnSommetATous(Sommet s){
         for (Sommet v : g.getSommets()) {
-            s.ajouterVoisin(v);
+            g.ajouterArete(s, v);
         }
     }
 
@@ -477,10 +477,15 @@ public class GrapheTest {
         }
     }
 
+    public void ajouterAretePratique(int s1, int s2) {
+        g.getSommet(s1).ajouterVoisin(g.getSommet(s2));
+        g.getSommet(s2).ajouterVoisin(g.getSommet(s1));
+    }
+
     public void initChaine(int i) {
         initSommet(i);
         for (int j = 0; j < i-1; j++) {
-            g.getSommet(j).ajouterVoisin(g.getSommet(j+1));
+            ajouterAretePratique(j, j+1);
         }
     }
 
@@ -488,9 +493,9 @@ public class GrapheTest {
         if (i > 2) {
             initSommet(i);
             for (int j = 0; j < i-1; j++) {
-                g.getSommet(j).ajouterVoisin(g.getSommet(j+1));
+                ajouterAretePratique(j, j+1);
             }
-            g.getSommet(i-1).ajouterVoisin(g.getSommet(0));
+            ajouterAretePratique(i-1, 0);
         }
     }
 
@@ -504,10 +509,11 @@ public class GrapheTest {
             sIndiceAdd.add(j+offset);
         }
         for (int j = 0; j < i -1; j++) {
-            g.getSommet(j+offset).ajouterVoisin(g.getSommet(j+offset+1));
+            ajouterAretePratique(j+offset, j+offset+1);
         }
         return sIndiceAdd;
     }
+
     public List<Integer> ajouterCycleNonReliee(int i) {
         List<Integer> sIndiceAdd = new ArrayList<>();
         if (i > 2) {
@@ -519,9 +525,9 @@ public class GrapheTest {
                 sIndiceAdd.add(j+offset);
             }
             for (int j = 0; j < i -1; j++) {
-                g.getSommet(j+offset).ajouterVoisin(g.getSommet(j+offset+1));
+                ajouterAretePratique(j+offset, j+offset+1);
             }
-            g.getSommet(offset).ajouterVoisin(g.getSommet(offset+i-1));
+            ajouterAretePratique(offset, offset+i-1);
         }
         return sIndiceAdd;
     }
@@ -531,11 +537,11 @@ public class GrapheTest {
         List<Integer> indiceTronc = ajouterChaineNonReliee(longueurTronc);
         for (Integer indice : indiceTronc) {
             List<Integer> indiceBranche = ajouterChaineNonReliee(longueurBranche);
-            g.getSommet(indice).ajouterVoisin(g.getSommet(indiceBranche.get(0)));
+            ajouterAretePratique(indice, indiceBranche.get(0));
         }
     }
 
-    @Disabled
+    // @Disabled
     @Test
     public void test_est_arbre_true_vide() {
         initVide();
@@ -559,7 +565,6 @@ public class GrapheTest {
         assertTrue(g.estArbre());
     }
 
-    // @Disabled
     @Test
     public void test_est_arbre_true_arbre() {
         initVide();
