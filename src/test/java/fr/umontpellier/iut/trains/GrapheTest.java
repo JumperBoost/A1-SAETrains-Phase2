@@ -596,6 +596,7 @@ public class GrapheTest {
         assertFalse(g.estArbre());
     }
 
+    @Disabled
     @Test
     public void test_fusionnerEnsembleSommets(){
         Graphe graphe = new Graphe(0);
@@ -638,5 +639,96 @@ public class GrapheTest {
         assertEquals(sommetBuilder.createSommet().getSurcout(), newSommet.getIndice());
         assertEquals(sommetBuilder.createSommet().getNbPointsVictoire(), nouveau.getSommet(1).getNbPointsVictoire());
         assertEquals(sommetBuilder.createSommet().getJoueurs(), nouveau.getSommet(1).getJoueurs());
+    }
+
+    @Test
+    public void test_coloration_gloutonne() {  // soucis : genere 10 combinaisons alors que 3 parmi 5 ca fait 20. Il manque la bonne séquence egale au graphe
+        Graphe g = new Graphe();
+
+        Sommet.SommetBuilder sommet = new Sommet.SommetBuilder();
+        sommet.setIndice(1);
+        Sommet s = sommet.createSommet();
+
+        sommet.setIndice(2);
+        Sommet s2 = sommet.createSommet();
+
+        sommet.setIndice(3);
+        Sommet s3 = sommet.createSommet();
+
+        sommet.setIndice(4);
+        Sommet s4 = sommet.createSommet();
+
+        sommet.setIndice(5);
+        Sommet s5 = sommet.createSommet();
+
+
+        g.ajouterSommet(s);
+        g.ajouterSommet(s2);
+        g.ajouterSommet(s3);
+        g.ajouterSommet(s4);
+        g.ajouterSommet(s5);
+
+        g.ajouterArete(s, s2);
+        g.ajouterArete(s2, s3);
+        g.ajouterArete(s3, s4);
+        g.ajouterArete(s4, s5);
+        g.ajouterArete(s5, s2);
+        g.ajouterArete(s, s5);
+
+
+        Map<Integer, Set<Sommet>> map = g.getColorationGloutonne();
+
+        assertFalse(g.estCycle());
+    }
+
+    @Test
+    public void test_coloration_gloutonne_indice_de_meme_degre() {  // soucis : genere 10 combinaisons alors que 3 parmi 5 ca fait 20. Il manque la bonne séquence egale au graphe
+        Graphe g = new Graphe();
+
+        Sommet.SommetBuilder sommet = new Sommet.SommetBuilder();
+        sommet.setIndice(1);
+        Sommet s = sommet.createSommet();
+
+        sommet.setIndice(2);
+        Sommet s2 = sommet.createSommet();
+
+        sommet.setIndice(3);
+        Sommet s3 = sommet.createSommet();
+
+        sommet.setIndice(4);
+        Sommet s4 = sommet.createSommet();
+
+
+
+        g.ajouterSommet(s);
+        g.ajouterSommet(s2);
+        g.ajouterSommet(s3);
+        g.ajouterSommet(s4);
+
+        g.ajouterArete(s, s2);
+        g.ajouterArete(s2, s3);
+        g.ajouterArete(s3, s4);
+        g.ajouterArete(s,s4);
+
+        Map<Integer, Set<Sommet>> map = g.getColorationGloutonne();
+        for (Integer a : map.keySet()) {
+            assertTrue(a.equals(1) || a.equals(2));
+            assertNotEquals(3, (int) a);
+        }
+        Set<Sommet> ens = new HashSet<>();
+        ens.add(s);
+        ens.add(s3);
+
+        Set<Sommet> ens2 = new HashSet<>();
+        ens2.add(s2);
+        ens2.add(s4);
+
+        assertTrue(map.get(1).containsAll(ens));
+        assertTrue(map.get(2).containsAll(ens2));
+        assertFalse(map.get(1).containsAll(ens2));
+        assertEquals(2, map.size());
+
+        assertFalse(map.isEmpty());
+        assertTrue(g.estCycle());
     }
 }

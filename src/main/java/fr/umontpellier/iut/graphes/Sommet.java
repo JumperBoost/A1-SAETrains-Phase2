@@ -4,6 +4,7 @@ import fr.umontpellier.iut.trains.Jeu;
 import fr.umontpellier.iut.trains.Joueur;
 import fr.umontpellier.iut.trains.plateau.Tuile;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
  * Classe modélisant les sommets. Le numéro du sommet correspond à la numérotation du plateau en partant
  * d'en haut à gauche et en allant vers le bas à droite.
  */
-public class Sommet {
+public class Sommet implements Comparator<Sommet> {
     /**
      * Numéro du sommet.
      */
@@ -125,6 +126,14 @@ public class Sommet {
     @Override
     public String toString() {
         return String.valueOf(i);
+    }
+
+    public int compare(Sommet s1, Sommet s2){
+        if (s1.getIndice() > s2.getIndice()){
+            return 1;
+        }
+        else if (s1.getIndice() < s2.getIndice()){return -1;}
+        return 0;
     }
 
     public static class SommetBuilder {

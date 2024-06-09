@@ -348,7 +348,41 @@ public class Graphe {
      * (si deux sommets ont le même degré, alors on les ordonne par indice croissant).
      */
     public Map<Integer, Set<Sommet>> getColorationGloutonne() {
-        throw new RuntimeException("Méthode à implémenter");
+        Map<Integer, Set<Sommet>> coloration = new HashMap<>();
+        Graphe newGraphe = new Graphe(sommets);
+        int nbCouleurs = degreMax() + 1;
+        for (int i=1; i<=nbCouleurs; i++){
+            coloration.put(i, new HashSet<>());
+        }
+        Set<Sommet> AVoir = ordonerSommetDecroissant(sommets);
+        Set<Sommet> pourGraphe;
+        Sommet sommet;
+        boolean trouver;
+        int i;
+        for (Sommet s : AVoir) {
+            sommet = s;
+            trouver=false;
+            i = 0;
+            while (i <= nbCouleurs && !trouver) {
+                for (Sommet voisin : sommet.getVoisins()) {
+                    if (!coloration.get(i).contains(voisin) && !trouver) {
+                        coloration.get(i).add(sommet);
+                        trouver = true;
+                    }
+                }
+                i++;
+            }
+        }
+        return coloration;
+    }
+
+    private Set<Sommet> ordonerSommetDecroissant(Set<Sommet> s){
+        Set<Sommet> ordonner = new TreeSet<>();
+        for (Sommet sommet : s){
+            ordonner.add(sommet);
+        }
+
+        return ordonner;
     }
 
     /**
